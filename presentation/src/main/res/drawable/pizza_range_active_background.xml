@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape android:shape="rectangle"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <gradient
+        android:endColor="@color/pizza_range_background_active"
+        android:startColor="@color/pizza_range_background_active"/>
+
+    <corners
+        android:radius="6dp"/>
+
+</shape>

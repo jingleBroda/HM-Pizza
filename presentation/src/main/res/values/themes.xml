@@ -1,0 +1,24 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.HMPizza" parent="Base.Theme.HMPizza" />
+
+    <style name="Base.Theme.HMPizza" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/bottom_navigation_active_item_color</item>
+        <item name="colorOnSurface">@color/bottom_navigation_default_item_color</item>
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    </style>
+
+    <style name="HMPizza_BottomNavigationViewStyle" parent="Widget.Design.BottomNavigationView">
+        <item name="android:background">@color/bottom_navigation_bar_color</item>
+        <item name="itemIconTint">@drawable/bottom_navigation_active_item_color</item>
+        <item name="itemTextColor">@drawable/bottom_navigation_active_item_color</item>
+        <item name="fontFamily">@font/roboto_medium</item>
+    </style>
+
+    <style name="PizzaInfoButton" parent="Widget.Material3.Button">
+        <item name="android:background">@drawable/buy_pizza_button_background</item>
+        <item name="android:textColor">@color/stroke_pizza_buy_button</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+</resources>

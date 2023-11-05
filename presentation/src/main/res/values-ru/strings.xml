@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="start_city_string">Москва</string>
+    <string name="pizza_string">Пицца</string>
+    <string name="menu_string">Меню</string>
+    <string name="profile_string">Профиль</string>
+    <string name="basket_string">Корзина</string>
+    <string name="buy_pizza_string">от %d р</string>
+    <string name="empty_list_message">Упс! Товаров данной категории не найдено.</string>
+    <string name="products_coming_soon">Товары скоро появятся!</string>
+</resources>

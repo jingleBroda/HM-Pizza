@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="mainBackgroundColor">#F9F9F9</color>
+    <color name="pizza_range_background_default">#FFFFFFFF</color>
+    <color name="pizza_range_background_active">#F4CDD6</color>
+    <color name="pizza_range_text_color_default">#C3C4C9</color>
+    <color name="pizza_range_text_color_active">#FD3A69</color>
+    <color name="pizza_recipe_text_color">#AAAAAD</color>
+    <color name="stroke_pizza_buy_button">#FD3A69</color>
+    <color name="pizza_border_line_color">#F3F5F9</color>
+    <color name="bottom_navigation_bar_color">#F0F0F0</color>
+    <color name="bottom_navigation_active_item_color">#FD3A69</color>
+    <color name="bottom_navigation_default_item_color">#7B7B7B</color>
+</resources>
