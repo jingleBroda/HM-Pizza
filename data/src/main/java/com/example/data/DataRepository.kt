@@ -1,12 +1,17 @@
 package com.example.data
 
 import com.example.data.retrofit.HMPizzaRetrofitService
+import com.example.data.room.dao.HmPizzaDao
+import com.example.data.room.entity.PizzaRoomEntity
 import com.example.domain.DomainRepository
 import com.example.domain.model.Pizza
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class DataRepository @Inject constructor(
     private val retrofit: HMPizzaRetrofitService,
+    private val dao:HmPizzaDao
 ): DomainRepository() {
     override suspend fun getPizzas(): List<Pizza> {
         val result = retrofit.getRecipe().await()
@@ -44,5 +49,23 @@ class DataRepository @Inject constructor(
             i = 0
         }
         return pizzaList
+    }
+
+    override suspend fun getRoomPizza(): List<Pizza> {
+        return withContext(Dispatchers.IO) {
+            return@withContext dao.getRoomPizza().map { it.convertToPizza() }
+        }
+    }
+
+    override suspend fun saveRoomPizza(pizza: Pizza): Long {
+        return withContext(Dispatchers.IO) {
+            return@withContext dao.saveRoomPizza(PizzaRoomEntity.convertToPizzaRoomEntity(pizza))
+        }
+    }
+
+    override suspend fun deleteRoomPizza() {
+        withContext(Dispatchers.IO) {
+            dao.deleteRoomPizza()
+        }
     }
 }

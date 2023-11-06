@@ -19,8 +19,6 @@ import com.example.presentation.fragment.mainMenuFragment.adapter.bannerAdapter.
 import com.example.presentation.fragment.mainMenuFragment.adapter.pizzaInfoAdapter.PizzaInfoAdapter
 import com.example.presentation.fragment.mainMenuFragment.adapter.pizzaRangeAdapter.PizzaRangeAdapter
 import com.example.presentation.fragment.mainMenuFragment.saveData.ListPizzaParcelize
-import com.example.presentation.fragment.mainMenuFragment.saveData.PizzaParcelize
-import com.example.presentation.fragment.mainMenuFragment.saveData.Storage
 import com.example.presentation.utils.GridSpacingItemDecoration
 import com.example.presentation.utils.HorizontalSpaceItemDecoration
 import com.example.presentation.utils.ViewModelFactory
@@ -35,7 +33,6 @@ class MainMenuFragment : DaggerFragment(R.layout.fragment_main_menu), OnClickLis
     private lateinit var pizzaRangeAdapter: PizzaRangeAdapter
     private lateinit var pizzaInfoAdapter: PizzaInfoAdapter
     private var initialBannersHeight by Delegates.notNull<Int>()
-    private lateinit var storage: Storage
     private var saveListPizza = listOf<Pizza>()
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
@@ -50,7 +47,6 @@ class MainMenuFragment : DaggerFragment(R.layout.fragment_main_menu), OnClickLis
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding = FragmentMainMenuBinding.bind(view)
-        storage = Storage(requireContext())
         with(binding) {
             navigationBar.run {
                 val adapter = ArrayAdapter.createFromResource(
@@ -164,8 +160,8 @@ class MainMenuFragment : DaggerFragment(R.layout.fragment_main_menu), OnClickLis
                 binding.pizzaInfo.visibility = View.VISIBLE
             }
             else {
-                storage.clear()
-                viewModel.getPizza {
+                viewModel.deleteRoomModel()
+                viewModel.getRetrofitPizza {
                     if(it.isEmpty()) {
                         binding.progressBar.visibility = View.GONE
                         binding.pizzaInfo.visibility = View.INVISIBLE
@@ -182,30 +178,30 @@ class MainMenuFragment : DaggerFragment(R.layout.fragment_main_menu), OnClickLis
                         binding.progressBar.visibility = View.GONE
                         binding.pizzaInfo.visibility = View.VISIBLE
                         binding.emptyListMessage.visibility = View.GONE
-                        storage.savePizzaList(it)
+                        viewModel.saveRoomPizza(it)
                     }
                 }
             }
         }
         else{
-            val savePizzaList = storage.getPizzaList()
-            if(savePizzaList.isEmpty()) {
-                binding.progressBar.visibility = View.GONE
-                binding.pizzaInfo.visibility = View.INVISIBLE
-                binding.emptyListMessage.visibility = View.VISIBLE
+            viewModel.getRoomPizza { savePizzaList->
+                if(savePizzaList.isEmpty()) {
+                    binding.progressBar.visibility = View.GONE
+                    binding.pizzaInfo.visibility = View.INVISIBLE
+                    binding.emptyListMessage.visibility = View.VISIBLE
 
-                binding.emptyListMessage.text = requireContext().getString(
-                    R.string.empty_list_message
-                )
-            }
-            else {
-                storage.savePizzaList(savePizzaList)
-                pizzaInfoAdapter = PizzaInfoAdapter(savePizzaList)
-                binding.pizzaInfo.adapter = pizzaInfoAdapter
+                    binding.emptyListMessage.text = requireContext().getString(
+                        R.string.empty_list_message
+                    )
+                }
+                else {
+                    pizzaInfoAdapter = PizzaInfoAdapter(savePizzaList)
+                    binding.pizzaInfo.adapter = pizzaInfoAdapter
 
-                binding.progressBar.visibility = View.GONE
-                binding.pizzaInfo.visibility = View.VISIBLE
-                binding.emptyListMessage.visibility = View.GONE
+                    binding.progressBar.visibility = View.GONE
+                    binding.pizzaInfo.visibility = View.VISIBLE
+                    binding.emptyListMessage.visibility = View.GONE
+                }
             }
         }
     }

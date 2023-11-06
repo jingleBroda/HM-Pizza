@@ -39,7 +39,7 @@ android {
 dependencies {
     val dagger2_version = "2.48"
     val coroutin_version = "1.6.1"
-    val room_version = "2.4.3"
+    val room_version = "2.5.0"
     val retrofit_version = "2.9.0"
 
     implementation("androidx.core:core-ktx:1.9.0")

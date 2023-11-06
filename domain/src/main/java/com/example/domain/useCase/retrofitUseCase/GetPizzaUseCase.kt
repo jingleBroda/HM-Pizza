@@ -1,4 +1,4 @@
-package com.example.domain.useCase
+package com.example.domain.useCase.retrofitUseCase
 
 import com.example.domain.DomainRepository
 import com.example.domain.model.Pizza
