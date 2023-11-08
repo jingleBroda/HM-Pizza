@@ -4,7 +4,6 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.View.OnClickListener
-import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.widget.ArrayAdapter
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
@@ -25,7 +24,6 @@ import com.example.presentation.utils.ViewModelFactory
 import dagger.android.support.DaggerFragment
 import javax.inject.Inject
 import kotlin.properties.Delegates
-
 
 class MainMenuFragment : DaggerFragment(R.layout.fragment_main_menu), OnClickListener {
     private lateinit var binding:FragmentMainMenuBinding
@@ -58,149 +56,95 @@ class MainMenuFragment : DaggerFragment(R.layout.fragment_main_menu), OnClickLis
                 citySpinner.adapter = adapter
                 dropdownImg.setOnClickListener { citySpinner.performClick() }
             }
-            run {
-                bannerAdapter = BannerAdapter(
-                    listOf(
-                        Banner(R.drawable.banner2),
-                        Banner(R.drawable.banner2),
-                        Banner(R.drawable.banner2),
+            with(mainMenuCollapsingLayout){
+                run {
+                    bannerAdapter = BannerAdapter(
+                        listOf(
+                            Banner(R.drawable.banner2),
+                            Banner(R.drawable.banner2),
+                            Banner(R.drawable.banner2),
+                        )
                     )
-                )
-                banners.layoutManager = LinearLayoutManager(
-                    requireContext(),
-                    RecyclerView.HORIZONTAL,
-                    false
-                )
-                banners.adapter = bannerAdapter
-
-                val vto = banners.viewTreeObserver
-                vto.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
-                    override fun onGlobalLayout() {
-                        initialBannersHeight = banners.height
-                        banners.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                    }
-                })
-            }
-            run {
-                pizzaRangeAdapter = PizzaRangeAdapter(
-                    requireContext().resources.getStringArray(R.array.PizzaRange).toList(),
-                    this@MainMenuFragment
-                )
-                pizzaRange.layoutManager = LinearLayoutManager(
-                    requireContext(),
-                    RecyclerView.HORIZONTAL,
-                    false
-                )
-                pizzaRange.addItemDecoration(HorizontalSpaceItemDecoration(20))
-                pizzaRange.adapter = pizzaRangeAdapter
-                pizzaRange.itemAnimator = null
-            }
-            run {
-                pizzaInfo.layoutManager = GridLayoutManager(requireContext(), 1)
-                pizzaInfo.addItemDecoration(GridSpacingItemDecoration())
-                initPizzaRecView()
+                    banners.layoutManager = LinearLayoutManager(
+                        requireContext(),
+                        RecyclerView.HORIZONTAL,
+                        false
+                    )
+                    banners.adapter = bannerAdapter
+                }
+                run {
+                    pizzaRangeAdapter = PizzaRangeAdapter(
+                        requireContext().resources.getStringArray(R.array.PizzaRange).toList(),
+                        this@MainMenuFragment
+                    )
+                    pizzaRange.layoutManager = LinearLayoutManager(
+                        requireContext(),
+                        RecyclerView.HORIZONTAL,
+                        false
+                    )
+                    pizzaRange.addItemDecoration(HorizontalSpaceItemDecoration(20))
+                    pizzaRange.adapter = pizzaRangeAdapter
+                    pizzaRange.itemAnimator = null
+                }
+                run {
+                    mainMenuScrolling.pizzaInfo.layoutManager = GridLayoutManager(requireContext(), 1)
+                    mainMenuScrolling.pizzaInfo.addItemDecoration(GridSpacingItemDecoration())
+                    initPizzaRecView()
+                }
             }
         }
         super.onViewCreated(view, savedInstanceState)
     }
 
-    override fun onStart() {
-        super.onStart()
-        with(binding) {
-            initialBannersHeight = banners.height
-            //TODO не успел внедрить CollapsingToolbarLayout, поэтому пока так.
-            pizzaInfo.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
-                if (scrollY > oldScrollY) {
-                    // Прокрутка вниз
-                    if (banners.height > 0) {
-                        banners.layoutParams.height -= (scrollY - oldScrollY)
-                        if (banners.height < 0) {
-                            banners.layoutParams.height = 0
-                        }
-                        bannerAdapter = BannerAdapter(
-                            listOf(
-                                Banner(R.drawable.banner2),
-                                Banner(R.drawable.banner2),
-                                Banner(R.drawable.banner2),
+    private fun initPizzaRecView() {
+        with(binding.mainMenuCollapsingLayout.mainMenuScrolling) {
+            if(internetConnection().isInternetConnected()) {
+                if(saveListPizza.isNotEmpty()) {
+                    pizzaInfoAdapter = PizzaInfoAdapter(saveListPizza)
+                    pizzaInfo.adapter = pizzaInfoAdapter
+                    progressBar.visibility = View.GONE
+                    emptyListMessage.visibility = View.GONE
+                    pizzaInfo.visibility = View.VISIBLE
+                }
+                else {
+                    viewModel.deleteRoomModel()
+                    viewModel.getRetrofitPizza {
+                        if(it.isEmpty()) {
+                            progressBar.visibility = View.GONE
+                            pizzaInfo.visibility = View.INVISIBLE
+                            emptyListMessage.visibility = View.VISIBLE
+                            emptyListMessage.text = requireContext().getString(
+                                R.string.empty_list_message
                             )
-                        )
-                        banners.adapter = bannerAdapter
-                        banners.requestLayout()
-                    }
-                } else {
-                    // Прокрутка вверх
-                    if (banners.height < initialBannersHeight) {
-                        banners.layoutParams.height += (oldScrollY - scrollY)
-                        if (banners.height > initialBannersHeight) {
-                            banners.layoutParams.height = initialBannersHeight
                         }
-                        bannerAdapter = BannerAdapter(
-                            listOf(
-                                Banner(R.drawable.banner2),
-                                Banner(R.drawable.banner2),
-                                Banner(R.drawable.banner2),
-                            )
-                        )
-                        banners.adapter = bannerAdapter
-                        banners.requestLayout()
+                        else {
+                            pizzaInfoAdapter = PizzaInfoAdapter(it)
+                            pizzaInfo.adapter = pizzaInfoAdapter
+                            progressBar.visibility = View.GONE
+                            pizzaInfo.visibility = View.VISIBLE
+                            emptyListMessage.visibility = View.GONE
+                            viewModel.saveRoomPizza(it)
+                        }
                     }
                 }
             }
-        }
-    }
-
-    private fun initPizzaRecView() {
-        if(internetConnection().isInternetConnected()) {
-            if(saveListPizza.isNotEmpty()) {
-                pizzaInfoAdapter = PizzaInfoAdapter(saveListPizza)
-                binding.pizzaInfo.adapter = pizzaInfoAdapter
-
-                binding.progressBar.visibility = View.GONE
-                binding.emptyListMessage.visibility = View.GONE
-                binding.pizzaInfo.visibility = View.VISIBLE
-            }
-            else {
-                viewModel.deleteRoomModel()
-                viewModel.getRetrofitPizza {
-                    if(it.isEmpty()) {
-                        binding.progressBar.visibility = View.GONE
-                        binding.pizzaInfo.visibility = View.INVISIBLE
-                        binding.emptyListMessage.visibility = View.VISIBLE
-
-                        binding.emptyListMessage.text = requireContext().getString(
+            else{
+                viewModel.getRoomPizza { savePizzaList->
+                    if(savePizzaList.isEmpty()) {
+                        progressBar.visibility = View.GONE
+                        pizzaInfo.visibility = View.INVISIBLE
+                        emptyListMessage.visibility = View.VISIBLE
+                        emptyListMessage.text = requireContext().getString(
                             R.string.empty_list_message
                         )
                     }
                     else {
-                        pizzaInfoAdapter = PizzaInfoAdapter(it)
-                        binding.pizzaInfo.adapter = pizzaInfoAdapter
-
-                        binding.progressBar.visibility = View.GONE
-                        binding.pizzaInfo.visibility = View.VISIBLE
-                        binding.emptyListMessage.visibility = View.GONE
-                        viewModel.saveRoomPizza(it)
+                        pizzaInfoAdapter = PizzaInfoAdapter(savePizzaList)
+                        pizzaInfo.adapter = pizzaInfoAdapter
+                        progressBar.visibility = View.GONE
+                        pizzaInfo.visibility = View.VISIBLE
+                        emptyListMessage.visibility = View.GONE
                     }
-                }
-            }
-        }
-        else{
-            viewModel.getRoomPizza { savePizzaList->
-                if(savePizzaList.isEmpty()) {
-                    binding.progressBar.visibility = View.GONE
-                    binding.pizzaInfo.visibility = View.INVISIBLE
-                    binding.emptyListMessage.visibility = View.VISIBLE
-
-                    binding.emptyListMessage.text = requireContext().getString(
-                        R.string.empty_list_message
-                    )
-                }
-                else {
-                    pizzaInfoAdapter = PizzaInfoAdapter(savePizzaList)
-                    binding.pizzaInfo.adapter = pizzaInfoAdapter
-
-                    binding.progressBar.visibility = View.GONE
-                    binding.pizzaInfo.visibility = View.VISIBLE
-                    binding.emptyListMessage.visibility = View.GONE
                 }
             }
         }
@@ -220,18 +164,22 @@ class MainMenuFragment : DaggerFragment(R.layout.fragment_main_menu), OnClickLis
                 val pizza =
                     requireContext().resources.getStringArray(R.array.PizzaRange).toList().first()
                 if(category == pizza) {
-                    binding.progressBar.visibility = View.VISIBLE
-                    binding.pizzaInfo.visibility = View.INVISIBLE
-                    binding.emptyListMessage.visibility = View.GONE
+                    with(binding.mainMenuCollapsingLayout.mainMenuScrolling) {
+                        progressBar.visibility = View.VISIBLE
+                        pizzaInfo.visibility = View.INVISIBLE
+                        emptyListMessage.visibility = View.GONE
+                    }
                     initPizzaRecView()
                 }
                 else{
-                    binding.progressBar.visibility = View.GONE
-                    binding.pizzaInfo.visibility = View.INVISIBLE
-                    binding.emptyListMessage.visibility = View.VISIBLE
-                    binding.emptyListMessage.text = requireContext().getString(
-                        R.string.products_coming_soon
-                    )
+                    with(binding.mainMenuCollapsingLayout.mainMenuScrolling) {
+                        progressBar.visibility = View.GONE
+                        pizzaInfo.visibility = View.INVISIBLE
+                        emptyListMessage.visibility = View.VISIBLE
+                        emptyListMessage.text = requireContext().getString(
+                            R.string.products_coming_soon
+                        )
+                    }
                 }
             }
         }
